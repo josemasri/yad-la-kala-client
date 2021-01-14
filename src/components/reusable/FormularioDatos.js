@@ -52,7 +52,7 @@ export const FormularioDatos = ({ boleto, setBoleto, pedido, setPedido }) => {
       </div>
       <div className="mt-2 text-base">
         <div className="flex items-center justify-center">
-          <h5 className="text-center mr-2">Ingresa tu Pedido</h5>
+          <h5 className="text-center mr-2">Pedido (*opcional)</h5>
         </div>
 
         <div className="lg:flex text-center">

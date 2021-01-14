@@ -12,7 +12,7 @@ class MyDocument extends Document {
         return (
             <Html>
                 <Head />
-                <body>
+                <body className="max-w-lg mx-auto">
                     <Main />
                     <NextScript />
                 </body>

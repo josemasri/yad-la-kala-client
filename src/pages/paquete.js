@@ -13,6 +13,9 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import Modal from "react-modal";
 import { Loading } from "../components/reusable/Loading";
+import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
+import Navbar from "../components/reusable/Navbar";
+import { InstruccionesPaquete } from "../components/reusable/InstruccionesPaquete";
 
 const paquetePage = () => {
   const MySwal = withReactContent(Swal);
@@ -386,17 +389,21 @@ const paquetePage = () => {
   }, [pedido]);
 
   useEffect(() => {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
     if (
       boleto.nombre.trim() !== "" &&
       boleto.celular.trim() !== "" &&
       boleto.mail.trim() !== "" &&
+      re.test(boleto.mail.toLowerCase()) &&
       !boleto.valid
     ) {
       setBoleto({ ...boleto, valid: true });
     } else if (
       (boleto.nombre.trim() === "" ||
         boleto.celular.trim() === "" ||
-        boleto.mail.trim() === "") &&
+        boleto.mail.trim() === "" ||
+        !re.test(boleto.mail.toLowerCase())) &&
       boleto.valid
     ) {
       setBoleto({ ...boleto, valid: false });
@@ -405,15 +412,13 @@ const paquetePage = () => {
 
   return (
     <>
+      <Navbar />
       {paquete && (
-        <div
-          className="min-h-screen p-5 font-bold max-w-4xl mx-auto"
-          style={{
-            backgroundImage: `url("images/pattern.png")`,
-          }}
-        >
+        <div className="min-h-screen p-5 font-bold max-w-4xl mx-auto">
           <div className="">
             <Details rifa={paquete} />
+
+            <InstruccionesPaquete />
             <div
               className="h-1 my-5"
               style={{
@@ -430,6 +435,11 @@ const paquetePage = () => {
           {paquete && (
             <>
               <div>
+                {paquete.cantidadBoletos300 > 0 && (
+                  <div className="text-center my-2 text-xl bg-yellow-300 rounded">
+                    Escoge tus boletos de $300
+                  </div>
+                )}
                 {Array.from(
                   { length: paquete.cantidadBoletos300 },
                   (variable, k) => (
@@ -447,6 +457,11 @@ const paquetePage = () => {
                 )}
               </div>
               <div>
+                {paquete.cantidadBoletos350 > 0 && (
+                  <div className="text-center my-2 text-xl bg-yellow-300 rounded">
+                    Escoge tus boletos de $350
+                  </div>
+                )}
                 {Array.from(
                   { length: paquete.cantidadBoletos350 },
                   (variable, k) => (
@@ -464,6 +479,11 @@ const paquetePage = () => {
                 )}
               </div>
               <div>
+                {paquete.cantidadBoletos500 > 0 && (
+                  <div className="text-center my-2 text-xl bg-yellow-500 rounded">
+                    Escoge tus boletos de $500
+                  </div>
+                )}
                 {Array.from(
                   { length: paquete.cantidadBoletos500 },
                   (variable, k) => (
@@ -482,6 +502,11 @@ const paquetePage = () => {
               </div>
             </>
           )}
+        </div>
+      )}
+      {paquete?.boletosHotPot > 0 && (
+        <div className="text-center my-2 text-xl bg-yellow-500 rounded">
+          {paquete.boletosHotPot} Boletos de Hot Pot
         </div>
       )}
       {boleto.valid &&
@@ -507,6 +532,7 @@ const paquetePage = () => {
                 onError={onError}
               />
             </PayPalScriptProvider>
+            <ContactoEfectivo />
             {!pagarConUsuario && (
               <button
                 className="text-white py-2 block rounded-lg w-full text-base mb-2"

@@ -17,7 +17,7 @@ const SlideshowRifas = ({ rifas }) => {
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     backgroundSize: "100% 100%",
-                    height: "40vh",
+                    height: "400px",
                   }}
                 ></div>
               </a>

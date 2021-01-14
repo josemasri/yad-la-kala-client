@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Modal from "react-modal";
 import { Loading } from "../components/reusable/Loading";
 import Swal from "sweetalert2";
+import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
 
 const rifa = () => {
   const [rifa, setRifa] = useState();
@@ -176,18 +177,23 @@ const rifa = () => {
     setBoleto({ ...boleto, pedido: `${pedido.option} ${pedido.nombre}` });
   }, [pedido]);
 
+
   useEffect(() => {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
     if (
       boleto.nombre.trim() !== "" &&
       boleto.celular.trim() !== "" &&
       boleto.mail.trim() !== "" &&
+      re.test(boleto.mail.toLowerCase()) &&
       !boleto.valid
     ) {
       setBoleto({ ...boleto, valid: true });
     } else if (
       (boleto.nombre.trim() === "" ||
         boleto.celular.trim() === "" ||
-        boleto.mail.trim() === "") &&
+        boleto.mail.trim() === "" ||
+        !re.test(boleto.mail.toLowerCase())) &&
       boleto.valid
     ) {
       setBoleto({ ...boleto, valid: false });
@@ -199,9 +205,6 @@ const rifa = () => {
       {rifa && (
         <div
           className="min-h-screen p-5 font-bold max-w-4xl mx-auto"
-          style={{
-            backgroundImage: `url("images/pattern.png")`,
-          }}
         >
           <div className="">
             <Details rifa={rifa} />
@@ -307,6 +310,7 @@ const rifa = () => {
                 agregarNumero={agregarNumero}
                 numerosSeleccionados={numerosSeleccionados}
                 numerosComprados={rifa.boletosComprados}
+                numerosTotales={rifa.numerosTotales}
               />
               <div className="p-2 text-sm font-normal">
                 <p>
@@ -341,6 +345,7 @@ const rifa = () => {
                       onError={onError}
                     />
                   </PayPalScriptProvider>
+                  <ContactoEfectivo />
                   {!pagarConUsuario && (
                     <button
                       className="text-white py-2 block rounded-lg w-full text-base"

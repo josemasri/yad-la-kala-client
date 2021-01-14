@@ -19,7 +19,7 @@ export const HotPot = () => {
         <div
           className="text-center py-5 mt-2 relative"
           style={{
-            backgroundImage: "url(images/hot-pot.jpg)",
+            backgroundImage: "url(https://imagenes-yad.s3.us-east-2.amazonaws.com/hot-pot.png)",
             backgroundSize: "100% 100%",
             height: "400px",
           }}
@@ -30,7 +30,6 @@ export const HotPot = () => {
               bottom: "90px",
               left: "50%",
               transform: "translate(-50%, 0)",
-              backgroundColor: "#EFA1B9",
             }}
           >
             {numeroActual && (

@@ -6,7 +6,7 @@ export const RifasWellcome = ({ wellcomeRef }) => {
       ref={wellcomeRef}
       className="flex items-center justify-center"
       style={{
-        backgroundImage: `url(https://apwpbsbly4myceibufb3bq-on.drv.tw/images/catalogo%20final.png)`,
+        backgroundImage: `url(https://apwpbsbly4myceibufb3bq-on.drv.tw/images/catalogo%20orden.png)`,
         backgroundPosition: "center center",
         backgroundRepeat: "no-repeat",
         height: "50vh",
