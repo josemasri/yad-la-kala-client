@@ -3,10 +3,11 @@ import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import React from "react";
 
 export const ContactoEfectivo = () => {
+
   return (
-    <div className="text-center">
-      <h4 className="font-bold">Para pago en efectivo comunicarse con:</h4>
-      <ul className="font-normal border border-green-300 m-3 p-2 rounded">
+    <div className="text-center mt-5">
+      <h4 className="">Para pago en efectivo comunicarse con:</h4>
+      <ul className="font-normal border border-green-300  mb-2 p-2 rounded">
         <li>
           Orly{" "}
           <a href="https://wa.me/+525620995100">

@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axiosClient from "../helpers/axiosClient";
 import { toast, ToastContainer } from "react-toastify";
 import { SelectorNumeros } from "../components/rifa/SelectorNumeros";
 import { Details } from "../components/rifa/Details";
-import { faPlusCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Modal from "react-modal";
 import { Loading } from "../components/reusable/Loading";
-import Swal from "sweetalert2";
 import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
+import StripePayment from "../components/stripe/StripePayment";
+import { FormularioDatos } from "../components/reusable/FormularioDatos";
+import { BoletosSeleccionados } from "../components/reusable/BoletosSeleccionados";
 
 const rifa = () => {
   const [rifa, setRifa] = useState();
@@ -52,10 +51,11 @@ const rifa = () => {
   };
 
   useEffect(() => {
-    // if (router.query.id) {
-    // Obtener rifa
-    getRifa(router.query.id);
-    // }
+    if (router.query.id) {
+      getRifa(router.query.id || "5ffe9ef84a3d2935287270f0");
+    } else {
+      router.push("/");
+    }
   }, []);
 
   const eliminarNumero = (numeroEliminado) =>
@@ -76,6 +76,48 @@ const rifa = () => {
     if (boleto.nombre.trim() === "") {
       toast("Ingresa tu nombre", { type: "error" });
       return;
+    }
+  };
+
+  const validarDatos = async () => {
+    const res = await axiosClient.get(`/rifas/${router.query.id}`);
+    const duplicates = res.data.boletosComprados.some((r) =>
+      numerosSeleccionados.includes(r)
+    );
+    if (duplicates) {
+      setRifa(res.data);
+      toast(
+        "El número seleccionado dejo de estar disponible, por favor selecciona otro(s)",
+        { type: "error" }
+      );
+      setNumerosSeleccionados([]);
+      return false;
+    }
+    return true;
+  };
+
+  const garantizarBoletos = async (res) => {
+    console.log(res);
+    try {
+      setLoading(true);
+      await axiosClient.post("/boletos", {
+        nombre: boleto.nombre,
+        mail: boleto.mail,
+        celular: boleto.celular,
+        pedido: boleto.pedido,
+        rifa: rifa.id,
+        numerosSeleccionados,
+        ...usuario,
+        order: res,
+      });
+      setLoading(false);
+      router.push("/agradecimiento");
+    } catch (error) {
+      toast("Usuario o contraseña incorrecta", {
+        type: "error",
+      });
+      setLoading(false);
+      console.log(error.response.data);
     }
   };
 
@@ -114,69 +156,9 @@ const rifa = () => {
     }
   };
 
-  const createOrder = async (data, actions) => {
-    const res = await axiosClient.get(`/rifas/${router.query.id}`);
-    console.log(res);
-    const duplicates = res.data.boletosComprados.some((r) =>
-      numerosSeleccionados.includes(r)
-    );
-    if (duplicates) {
-      setRifa(res.data);
-      toast(
-        "El número seleccionado dejo de estar disponible, por favor selecciona otro(s)",
-        { type: "error" }
-      );
-      setNumerosSeleccionados([]);
-      actions.disable();
-      setLoading(false);
-      return;
-    }
-    return actions.order.create({
-      intent: "CAPTURE",
-      purchase_units: [
-        {
-          description: "Boleto Rifa",
-          amount: {
-            currency_code: "MXN",
-            value: numerosSeleccionados.length * rifa.precio,
-          },
-        },
-      ],
-    });
-  };
-
-  const onApprove = async (data, actions) => {
-    console.log("onApprove");
-    // Registrar boletos en la bd
-    try {
-      await actions.order.capture();
-      const order = await actions.order.get();
-      setLoading(true);
-      await axiosClient.post("/boletos", {
-        nombre: boleto.nombre,
-        mail: boleto.mail,
-        celular: boleto.celular,
-        pedido: boleto.pedido,
-        rifa: rifa.id,
-        numerosSeleccionados,
-        order,
-      });
-      setLoading(false);
-      router.push("/agradecimiento");
-    } catch (error) {
-      setLoading(false);
-      console.log(error.response.data);
-    }
-  };
-
-  const onError = () => {
-    setLoading(false);
-  };
-
   useEffect(() => {
     setBoleto({ ...boleto, pedido: `${pedido.option} ${pedido.nombre}` });
   }, [pedido]);
-
 
   useEffect(() => {
     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -203,9 +185,7 @@ const rifa = () => {
   return (
     <>
       {rifa && (
-        <div
-          className="min-h-screen p-5 font-bold max-w-4xl mx-auto"
-        >
+        <div className="pt-5 px-5 max-w-4xl mx-auto">
           <div className="">
             <Details rifa={rifa} />
             <div
@@ -215,96 +195,11 @@ const rifa = () => {
               }}
             ></div>
             <div
-              className="rounded-lg block p-1 text-center text-xl"
+              className="rounded-lg block p-1 text-center"
               style={{
                 border: "4px solid #6adad7",
               }}
             >
-              <h3>Ingresa tus datos</h3>
-              <div className="mt-2">
-                <label htmlFor="nombre">Nombre</label>
-                <input
-                  autoFocus
-                  id="nombre"
-                  className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                  type="text"
-                  name="nombre"
-                  value={boleto.nombre}
-                  onChange={({ target: { value } }) =>
-                    setBoleto({ ...boleto, nombre: value })
-                  }
-                />
-              </div>
-              <div className="mt-2">
-                <label htmlFor="celular">Celular</label>
-                <input
-                  id="celular"
-                  className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                  type="tel"
-                  name="celular"
-                  value={boleto.celular}
-                  onChange={({ target: { value } }) =>
-                    setBoleto({ ...boleto, celular: value })
-                  }
-                />
-              </div>
-              <div className="mt-2">
-                <label htmlFor="correo">Mail</label>
-
-                <input
-                  id="correo"
-                  className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                  type="mail"
-                  name="correo"
-                  value={boleto.mail}
-                  onChange={({ target: { value } }) =>
-                    setBoleto({ ...boleto, mail: value })
-                  }
-                />
-              </div>
-              <div className="mt-2 text-base">
-                <div className="flex items-center justify-center">
-                  <h5 className="text-center mr-2">Ingresa tu Pedido</h5>
-                </div>
-
-                <div className="lg:flex text-center">
-                  <select
-                    className="w-full bg-transparent text-center border-b border-gray-500 p-1 placeholder-gray-600"
-                    style={{
-                      textAlignLast: "center",
-                    }}
-                    onChange={(e) =>
-                      setPedido({ ...pedido, option: e.target.value })
-                    }
-                    value={pedido.option}
-                  >
-                    <option value="Leiluy Nishmat">
-                      Leiluy Nishmat (Fallecido)
-                    </option>
-                    <option value="Refua Shelema">
-                      Refua Shelema (Enfermo)
-                    </option>
-                    <option value="Beraja y Hatzlaja">
-                      Beraja y Hatzlaja (Bendiciones y éxito)
-                    </option>
-                    <option value="Zibug Hagun">
-                      Zibug Hagun (Conseguir Pareja)
-                    </option>
-                    <option value="Zera Shel Kayama">
-                      Zera Shel Kayama (Tener Hijos)
-                    </option>
-                  </select>
-                  <input
-                    className="w-full bg-transparent text-center border-b border-gray-500 p-1 mb-2"
-                    type="text"
-                    placeholder="Nombre (ej. Yosef Ben Sara)"
-                    onChange={(e) =>
-                      setPedido({ ...pedido, nombre: e.target.value })
-                    }
-                    value={pedido.nombre}
-                  />
-                </div>
-              </div>
               <SelectorNumeros
                 eliminarNumero={eliminarNumero}
                 agregarNumero={agregarNumero}
@@ -312,82 +207,37 @@ const rifa = () => {
                 numerosComprados={rifa.boletosComprados}
                 numerosTotales={rifa.numerosTotales}
               />
-              <div className="p-2 text-sm font-normal">
-                <p>
-                  Numero(s) seleccionados:{" "}
-                  {numerosSeleccionados.map(
-                    (numero, i) =>
-                      `${numero}${
-                        i !== numerosSeleccionados.length - 1 ? ", " : ""
-                      }`
-                  )}
-                </p>
-                <p className="text-lg">
-                  Total:{" "}
-                  {new Intl.NumberFormat("es-MX", {
-                    style: "currency",
-                    currency: "MXN",
-                  }).format(numerosSeleccionados.length * rifa.precio)}{" "}
-                </p>
-              </div>
+              <BoletosSeleccionados
+                numerosSeleccionados={numerosSeleccionados}
+                precio={rifa.precio}
+              />
+
+              {numerosSeleccionados.length > 0 && (
+                <>
+                  <FormularioDatos
+                    boleto={boleto}
+                    setBoleto={setBoleto}
+                    pedido={pedido}
+                    setPedido={setPedido}
+                  />
+                  <BoletosSeleccionados
+                    numerosSeleccionados={numerosSeleccionados}
+                    precio={rifa.precio}
+                  />
+                </>
+              )}
+
               {numerosSeleccionados.length > 0 && boleto.valid ? (
-                <div className="mt-2">
-                  <PayPalScriptProvider
-                    options={{
-                      "client-id": process.env.NEXT_PUBLIC_PAYPAL_ID,
-                      currency: "MXN",
-                    }}
-                  >
-                    <PayPalButtons
-                      forceReRender={[numerosSeleccionados]}
-                      createOrder={createOrder}
-                      onApprove={onApprove}
-                      onError={onError}
+                <div className="my-2">
+                  <div className="">
+                    <StripePayment
+                      validarDatos={validarDatos}
+                      garantizarBoletos={garantizarBoletos}
+                      amount={parseFloat(
+                        numerosSeleccionados.length * rifa.precio
+                      )}
                     />
-                  </PayPalScriptProvider>
-                  <ContactoEfectivo />
-                  {!pagarConUsuario && (
-                    <button
-                      className="text-white py-2 block rounded-lg w-full text-base"
-                      style={{
-                        backgroundColor: "#6adad7",
-                      }}
-                      onClick={() => setPagarConUsuario(!pagarConUsuario)}
-                    >
-                      Pagar con usuario
-                    </button>
-                  )}
-                  {pagarConUsuario && (
-                    <div className="">
-                      <input
-                        placeholder="Nombre de Usuario"
-                        className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                        type="text"
-                        value={usuario.usuario}
-                        onChange={({ target: { value } }) =>
-                          setUsuario({ ...usuario, usuario: value })
-                        }
-                      />
-                      <input
-                        placeholder="Contraseña"
-                        className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                        type="password"
-                        value={usuario.password}
-                        onChange={({ target: { value } }) =>
-                          setUsuario({ ...usuario, password: value })
-                        }
-                      />
-                      <button
-                        className="text-white py-2 block rounded-lg w-full text-base mt-2"
-                        style={{
-                          backgroundColor: "#6adad7",
-                        }}
-                        onClick={pagarConUsuarioClick}
-                      >
-                        Pagar con usuario
-                      </button>
-                    </div>
-                  )}
+                  </div>
                 </div>
               ) : (
                 <button
@@ -424,6 +274,63 @@ const rifa = () => {
           <Loading />
         </div>
       </Modal>
+
+      {!pagarConUsuario && (
+        <div
+          className="rounded-lg block m-5 p-2 text-center"
+          style={{
+            border: "4px solid #6adad7",
+          }}
+        >
+          <ContactoEfectivo />
+          <button
+            className="text-white py-2 block rounded-lg w-full text-base"
+            style={{
+              backgroundColor: "#6adad7",
+            }}
+            onClick={() => setPagarConUsuario(!pagarConUsuario)}
+          >
+            Pagar con usuario
+          </button>
+        </div>
+      )}
+      {pagarConUsuario && (
+        <div
+          className="rounded-lg block m-5 p-2 text-center"
+          style={{
+            border: "4px solid #6adad7",
+          }}
+        >
+          <input
+            placeholder="Nombre de Usuario"
+            className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
+            type="text"
+            value={usuario.usuario}
+            onChange={({ target: { value } }) =>
+              setUsuario({ ...usuario, usuario: value })
+            }
+          />
+          <input
+            placeholder="Contraseña"
+            className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
+            type="password"
+            value={usuario.password}
+            onChange={({ target: { value } }) =>
+              setUsuario({ ...usuario, password: value })
+            }
+          />
+          <button
+            className="text-white py-2 block rounded-lg w-full text-base mt-2"
+            style={{
+              backgroundColor: "#6adad7",
+            }}
+            onClick={pagarConUsuarioClick}
+          >
+            Pagar con usuario
+          </button>
+        </div>
+      )}
+
       <ToastContainer />
     </>
   );

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axiosClient from "../helpers/axiosClient";
 import { toast, ToastContainer } from "react-toastify";
 import { HotPot } from "../components/index/HotPot";
 import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
+import StripePayment from "../components/stripe/StripePayment";
+import Modal from "react-modal";
+import { Loading } from "../components/reusable/Loading";
+
 
 const RifaHotPotPage = () => {
   const [numeroActual, setNumeroActual] = useState();
@@ -28,6 +31,8 @@ const RifaHotPotPage = () => {
     usuario: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+
 
   const validarBoleto = () => {
     if (boleto.nombre.trim() === "") {
@@ -40,39 +45,31 @@ const RifaHotPotPage = () => {
     }
   };
 
-  const createOrder = async (data, actions) => {
-    return actions.order.create({
-      intent: "CAPTURE",
-      purchase_units: [
-        {
-          description: "Boleto Rifa Hot Pot",
-          amount: {
-            currency_code: "MXN",
-            value: 500,
-          },
-        },
-      ],
-    });
+  const validarDatos = async () => {
+    return true;
   };
 
-  const onApprove = async (data, actions) => {
-    await actions.order.capture();
-    const order = await actions.order.get();
-    // Registrar boletos en la bd
+  const garantizarBoletos = async (res) => {
+    console.log(res);
     try {
+      setLoading(true);
       await axiosClient.post("/boletos-hot-pots", {
         nombre: boleto.nombre,
         mail: boleto.mail,
         celular: boleto.celular,
         pedido: boleto.pedido,
-        orderId: order.id,
+        orderId: res.id,
       });
+      setLoading(false);
+      router.push("/agradecimiento");
     } catch (error) {
-      console.log(error.response.data);
+      toast("Ha ocurrido un error", {
+        type: "error",
+      });
+      setLoading(false);
+      console.log(error);
     }
   };
-
-  const onError = () => {};
 
   const pagarConUsuarioClick = async () => {
     // Registrar boletos en la bd
@@ -124,6 +121,14 @@ const RifaHotPotPage = () => {
   return (
     <>
       <div className="min-h-screen p-5 font-bold max-w-4xl mx-auto">
+        <div
+          className="rounded-lg my-2"
+          style={{
+            border: "4px solid #6adad7",
+          }}
+        >
+          <HotPot />
+        </div>
         <div className="">
           <div
             className="rounded-lg block p-1 text-center text-xl"
@@ -225,62 +230,13 @@ const RifaHotPotPage = () => {
             </div>
             {boleto.valid ? (
               <div className="mt-2">
-                <PayPalScriptProvider
-                  options={{
-                    "client-id": process.env.NEXT_PUBLIC_PAYPAL_ID,
-                    currency: "MXN",
-                  }}
-                >
-                  <PayPalButtons
-                    forceReRender={boleto}
-                    createOrder={createOrder}
-                    onApprove={onApprove}
-                    onError={onError}
+                <div className="">
+                  <StripePayment
+                    validarDatos={validarDatos}
+                    garantizarBoletos={garantizarBoletos}
+                    amount={parseFloat(500)}
                   />
-                </PayPalScriptProvider>
-                <ContactoEfectivo />
-                {!pagarConUsuario && (
-                  <button
-                    className="text-white py-2 block rounded-lg w-full text-base"
-                    style={{
-                      backgroundColor: "#6adad7",
-                    }}
-                    onClick={() => setPagarConUsuario(!pagarConUsuario)}
-                  >
-                    Pagar con usuario
-                  </button>
-                )}
-                {pagarConUsuario && (
-                  <div className="">
-                    <input
-                      placeholder="Nombre de Usuario"
-                      className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                      type="text"
-                      value={usuario.usuario}
-                      onChange={({ target: { value } }) =>
-                        setUsuario({ ...usuario, usuario: value })
-                      }
-                    />
-                    <input
-                      placeholder="Contraseña"
-                      className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                      type="password"
-                      value={usuario.password}
-                      onChange={({ target: { value } }) =>
-                        setUsuario({ ...usuario, password: value })
-                      }
-                    />
-                    <button
-                      className="text-white py-2 block rounded-lg w-full text-base mt-2"
-                      style={{
-                        backgroundColor: "#6adad7",
-                      }}
-                      onClick={pagarConUsuarioClick}
-                    >
-                      Pagar con usuario
-                    </button>
-                  </div>
-                )}
+                </div>
               </div>
             ) : (
               <button
@@ -295,17 +251,75 @@ const RifaHotPotPage = () => {
               </button>
             )}
           </div>
-        </div>
-        <div
-          className="rounded-lg my-2"
-          style={{
-            border: "4px solid #6adad7",
-          }}
-        >
-          <HotPot />
+
+          {boleto.valid && (
+            <>
+              <ContactoEfectivo />
+              {!pagarConUsuario && (
+                <button
+                  className="text-white py-2 block rounded-lg w-full text-base"
+                  style={{
+                    backgroundColor: "#6adad7",
+                  }}
+                  onClick={() => setPagarConUsuario(!pagarConUsuario)}
+                >
+                  Pagar con usuario
+                </button>
+              )}
+              {pagarConUsuario && (
+                <div className="">
+                  <input
+                    placeholder="Nombre de Usuario"
+                    className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
+                    type="text"
+                    value={usuario.usuario}
+                    onChange={({ target: { value } }) =>
+                      setUsuario({ ...usuario, usuario: value })
+                    }
+                  />
+                  <input
+                    placeholder="Contraseña"
+                    className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
+                    type="password"
+                    value={usuario.password}
+                    onChange={({ target: { value } }) =>
+                      setUsuario({ ...usuario, password: value })
+                    }
+                  />
+                  <button
+                    className="text-white py-2 block rounded-lg w-full text-base mt-2"
+                    style={{
+                      backgroundColor: "#6adad7",
+                    }}
+                    onClick={pagarConUsuarioClick}
+                  >
+                    Pagar con usuario
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
-
+      <Modal
+        isOpen={loading}
+        ariaHideApp={false}
+        style={{
+          content: {
+            top: "50%",
+            left: "50%",
+            right: "auto",
+            bottom: "auto",
+            marginRight: "-50%",
+            transform: "translate(-50%, -50%)",
+          },
+        }}
+      >
+        <div className="text-center">
+          <p className="mb-2">Por favor espere...</p>
+          <Loading />
+        </div>
+      </Modal>
       <ToastContainer />
     </>
   );

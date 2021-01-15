@@ -11,7 +11,7 @@ export const SelectorNumeros = ({
 }) => {
   return (
     <>
-      <h5 className="mt-2 text-center">Escoge tu(s) boleto(s)</h5>
+      <h5 className="mt-2 text-center font-bold">Escoge tu(s) boleto(s)</h5>
       <div className="grid grid-cols-5 gap-3 text-center h-52 overflow-scroll p-5 text-white">
         {Array.from({ length: numerosTotales }, (_, i) => i + 1).map(
           (numero) => (

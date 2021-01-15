@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import SlideShowRifas from "../components/paquete/SlideShowRifas";
+import StripePayment from "../components/stripe/StripePayment";
 
 import Navbar from "../components/reusable/Navbar";
 import axiosClient from "../helpers/axiosClient";
 import { useRouter } from "next/router";
 import { Details } from "../components/rifa/Details";
-import { InstruccionesPaquete } from "../components/reusable/InstruccionesPaquete";
 import { FormularioDatos } from "../components/reusable/FormularioDatos";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
@@ -44,6 +44,80 @@ export default function Home() {
     usuario: "",
     password: "",
   });
+
+  const validarDatos = async () => {
+    const resBoletosActual = await axiosClient.get(`/boletosComprados`);
+    let duplicates = false;
+    // Todo check duplicates
+    Object.keys(resBoletosActual.data).forEach((rifaId) => {
+      // Encontrar Boleto
+      const boletoActual = boletosSeleccionados.find(
+        (boletosSeleccionado) => boletosSeleccionado.rifa === rifaId
+      );
+      if (boletoActual) {
+        if (
+          boletoActual.numeros.some((r) =>
+            resBoletosActual.data[rifaId].includes(r)
+          )
+        ) {
+          toast(
+            `Uno de tus boletos de la rifa ${
+              rifas.find((rifa) => rifa.id === rifaId).nombre
+            } fue comprado, por favor cambialo antes de continuar`,
+            {
+              type: "error",
+            }
+          );
+          duplicates = true;
+        }
+      }
+    });
+    if (duplicates) {
+      toast(
+        "El número seleccionado dejo de estar disponible, por favor selecciona otro(s)",
+        { type: "error" }
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const garantizarBoletos = async (res) => {
+    setLoading(true);
+    try {
+      const boletos = [];
+      boletosSeleccionados.forEach((boletosSeleccionado) => {
+        boletosSeleccionado.numeros.forEach((numero) =>
+          boletos.push({
+            boleto: numero,
+            rifa: boletosSeleccionado.rifa,
+          })
+        );
+      });
+      try {
+        // Registrar boletos en la bd
+        await axiosClient.post("/comprar-paquete-boletos", {
+          boletos,
+          paquete: paquete.id,
+          ...boleto,
+          orderId: res.id,
+        });
+        setLoading(false);
+        router.push("/agradecimiento");
+      } catch (error) {
+        toast(
+          "Ha ocurrido un error al registrar tus boletos, favor de comunicarte a 5563192945 con Jose Masri",
+          { type: "error" }
+        );
+      }
+    } catch (error) {
+      setLoading(false);
+      toast(
+        "Ha ocurrido un error al registrar tus boletos, favor de comunicarte a 5563192945 con Jose Masri",
+        { type: "error" }
+      );
+    }
+  };
 
   const router = useRouter();
 
@@ -425,12 +499,6 @@ export default function Home() {
                 borderTop: "4px dotted #6adad7",
               }}
             ></div>
-            <FormularioDatos
-              boleto={boleto}
-              setBoleto={setBoleto}
-              setPedido={setPedido}
-              pedido={pedido}
-            />
 
             {boletosComprados && (
               <SlideShowRifas
@@ -472,78 +540,95 @@ export default function Home() {
                     de $500
                   </p>
                 </div>
-                {paquete?.boletosHotPot > 10 && (
-                  <p className="text-center">
-                    * Los boletos del Hot Pot se agregan automáticamente{" "}
-                  </p>
-                )}
+
+                <p className="text-center">
+                  * Los boletos del JackPot se agregan automáticamente{" "}
+                </p>
               </div>
             )}
+            {boletosTotalesSeleccionados.boletos300 ===
+              paquete.cantidadBoletos300 &&
+              boletosTotalesSeleccionados.boletos350 ===
+                paquete.cantidadBoletos350 &&
+              boletosTotalesSeleccionados.boletos500 ===
+                paquete.cantidadBoletos500 && (
+                <div
+                  className="rounded-lg block p-1 text-center mt-5"
+                  style={{
+                    border: "4px solid #6adad7",
+                  }}
+                >
+                  <FormularioDatos
+                    boleto={boleto}
+                    setBoleto={setBoleto}
+                    setPedido={setPedido}
+                    pedido={pedido}
+                  />
+                  {boleto.valid && (
+                    <div className="">
+                      <StripePayment
+                        validarDatos={validarDatos}
+                        garantizarBoletos={garantizarBoletos}
+                        amount={parseFloat(paquete.precio)}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             {boleto.valid &&
               boletosTotalesSeleccionados.boletos300 ===
                 paquete.cantidadBoletos300 &&
               boletosTotalesSeleccionados.boletos350 ===
                 paquete.cantidadBoletos350 &&
               boletosTotalesSeleccionados.boletos500 ===
-                paquete.cantidadBoletos500 &&
-              boleto.valid && (
-                <div className="mt-2">
-                  <PayPalScriptProvider
-                    options={{
-                      "client-id": process.env.NEXT_PUBLIC_PAYPAL_ID,
-                      currency: "MXN",
-                    }}
-                  >
-                    <PayPalButtons
-                      forceReRender={boletosSeleccionados}
-                      createOrder={createOrder}
-                      onApprove={onApprove}
-                      onError={onError}
-                    />
-                  </PayPalScriptProvider>
+                paquete.cantidadBoletos500 && (
+                <div className="">
                   <ContactoEfectivo />
-                  {!pagarConUsuario && (
-                    <button
-                      className="text-white py-2 block rounded-lg w-full text-base mb-2"
-                      style={{
-                        backgroundColor: "#6adad7",
-                      }}
-                      onClick={() => setPagarConUsuario(!pagarConUsuario)}
-                    >
-                      Pagar con usuario
-                    </button>
-                  )}
-                  {pagarConUsuario && (
-                    <div className="">
-                      <input
-                        placeholder="Nombre de Usuario"
-                        className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                        type="text"
-                        value={usuario.usuario}
-                        onChange={({ target: { value } }) =>
-                          setUsuario({ ...usuario, usuario: value })
-                        }
-                      />
-                      <input
-                        placeholder="Contraseña"
-                        className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                        type="password"
-                        value={usuario.password}
-                        onChange={({ target: { value } }) =>
-                          setUsuario({ ...usuario, password: value })
-                        }
-                      />
+
+                  <div className="mt-2">
+                    {!pagarConUsuario && (
                       <button
-                        className="text-white py-2 block rounded-lg w-full text-base mt-2"
+                        className="text-white py-2 block rounded-lg w-full text-base mb-2"
                         style={{
                           backgroundColor: "#6adad7",
                         }}
-                        onClick={pagarConUsuarioClick}
+                        onClick={() => setPagarConUsuario(!pagarConUsuario)}
                       >
                         Pagar con usuario
                       </button>
-                    </div>
-                  )}
+                    )}
+                    {pagarConUsuario && (
+                      <div className="">
+                        <input
+                          placeholder="Nombre de Usuario"
+                          className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
+                          type="text"
+                          value={usuario.usuario}
+                          onChange={({ target: { value } }) =>
+                            setUsuario({ ...usuario, usuario: value })
+                          }
+                        />
+                        <input
+                          placeholder="Contraseña"
+                          className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
+                          type="password"
+                          value={usuario.password}
+                          onChange={({ target: { value } }) =>
+                            setUsuario({ ...usuario, password: value })
+                          }
+                        />
+                        <button
+                          className="text-white py-2 block rounded-lg w-full text-base mt-2"
+                          style={{
+                            backgroundColor: "#6adad7",
+                          }}
+                          onClick={pagarConUsuarioClick}
+                        >
+                          Pagar con usuario
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
           </div>

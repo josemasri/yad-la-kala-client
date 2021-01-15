@@ -4,9 +4,6 @@ export const FormularioDatos = ({ boleto, setBoleto, pedido, setPedido }) => {
   return (
     <div
       className="rounded-lg block p-1 text-center text-xl"
-      style={{
-        border: "4px solid #6adad7",
-      }}
     >
       <h3>Ingresa tus datos</h3>
       <div className="mt-2">
