@@ -3,9 +3,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm from "./CheckoutForm";
 
-const promise = loadStripe(
-  "pk_test_51I9PaNAY1jQpuEbfQNDyULCe5f5umRn3tP6e8eIF0Gq1AdWQ166MnmH1O6ZN0jqedNofTU83zhbYEqvvywkODheB008TtUDfRS"
-);
+const promise = loadStripe(process.env.NEXT_PUBLIC_STRIPE);
 export default function StripePayment({
   amount,
   validarDatos,
