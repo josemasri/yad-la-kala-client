@@ -413,170 +413,175 @@ const paquetePage = () => {
   return (
     <>
       <Navbar />
-      {paquete && (
-        <div className="min-h-screen p-5 font-bold max-w-4xl mx-auto">
-          <div className="">
-            <Details rifa={paquete} />
+      <div className="max-w-md mx-auto">
+        {paquete && (
+          <div className="min-h-screen p-5 font-bold max-w-4xl mx-auto">
+            <div className="">
+              <Details rifa={paquete} />
 
-            <InstruccionesPaquete />
-            <div
-              className="h-1 my-5"
-              style={{
-                borderTop: "4px dotted #6adad7",
-              }}
-            ></div>
-            <FormularioDatos
-              boleto={boleto}
-              setBoleto={setBoleto}
-              setPedido={setPedido}
-              pedido={pedido}
-            />
-          </div>
-          {paquete && (
-            <>
-              <div>
-                {paquete.cantidadBoletos300 > 0 && (
-                  <div className="text-center my-2 text-xl bg-yellow-300 rounded">
-                    Escoge tus boletos de $300
-                  </div>
-                )}
-                {Array.from(
-                  { length: paquete.cantidadBoletos300 },
-                  (variable, k) => (
-                    <Fragment key={k}>
-                      {rifas300.length > 0 && boletos.boletos300.length > 0 && (
-                        <RifaPaquete
-                          boletoState={boletos.boletos300[k]}
-                          setBoletos={setBoletos}
-                          rifas={rifas300}
-                          precioBoletos="boletos300"
-                        />
-                      )}
-                    </Fragment>
-                  )
-                )}
-              </div>
-              <div>
-                {paquete.cantidadBoletos350 > 0 && (
-                  <div className="text-center my-2 text-xl bg-yellow-300 rounded">
-                    Escoge tus boletos de $350
-                  </div>
-                )}
-                {Array.from(
-                  { length: paquete.cantidadBoletos350 },
-                  (variable, k) => (
-                    <Fragment key={k}>
-                      {rifas350.length > 0 && boletos.boletos350.length > 0 && (
-                        <RifaPaquete
-                          boletoState={boletos.boletos350[k]}
-                          setBoletos={setBoletos}
-                          rifas={rifas350}
-                          precioBoletos="boletos350"
-                        />
-                      )}
-                    </Fragment>
-                  )
-                )}
-              </div>
-              <div>
-                {paquete.cantidadBoletos500 > 0 && (
-                  <div className="text-center my-2 text-xl bg-yellow-500 rounded">
-                    Escoge tus boletos de $500
-                  </div>
-                )}
-                {Array.from(
-                  { length: paquete.cantidadBoletos500 },
-                  (variable, k) => (
-                    <Fragment key={k}>
-                      {rifas500.length > 0 && boletos.boletos500.length > 0 && (
-                        <RifaPaquete
-                          boletoState={boletos.boletos500[k]}
-                          setBoletos={setBoletos}
-                          rifas={rifas500}
-                          precioBoletos="boletos500"
-                        />
-                      )}
-                    </Fragment>
-                  )
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-      {paquete?.boletosHotPot > 0 && (
-        <div className="text-center my-2 text-xl bg-yellow-500 rounded">
-          {paquete.boletosHotPot} Boletos de Hot Pot
-        </div>
-      )}
-      {boleto.valid &&
-        [
-          ...boletos.boletos300,
-          ...boletos.boletos350,
-          ...boletos.boletos500,
-        ].every((boleto) => {
-          console.log(boleto.boleto);
-          return !(boleto.boleto == null);
-        }) && (
-          <div className="mt-2">
-            <PayPalScriptProvider
-              options={{
-                "client-id": process.env.NEXT_PUBLIC_PAYPAL_ID,
-                currency: "MXN",
-              }}
-            >
-              <PayPalButtons
-                forceReRender={boletos}
-                createOrder={createOrder}
-                onApprove={onApprove}
-                onError={onError}
-              />
-            </PayPalScriptProvider>
-            <ContactoEfectivo />
-            {!pagarConUsuario && (
-              <button
-                className="text-white py-2 block rounded-lg w-full text-base mb-2"
+              <InstruccionesPaquete />
+              <div
+                className="h-1 my-5"
                 style={{
-                  backgroundColor: "#6adad7",
+                  borderTop: "4px dotted #6adad7",
                 }}
-                onClick={() => setPagarConUsuario(!pagarConUsuario)}
-              >
-                Pagar con usuario
-              </button>
-            )}
-            {pagarConUsuario && (
-              <div className="">
-                <input
-                  placeholder="Nombre de Usuario"
-                  className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                  type="text"
-                  value={usuario.usuario}
-                  onChange={({ target: { value } }) =>
-                    setUsuario({ ...usuario, usuario: value })
-                  }
-                />
-                <input
-                  placeholder="Contraseña"
-                  className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                  type="password"
-                  value={usuario.password}
-                  onChange={({ target: { value } }) =>
-                    setUsuario({ ...usuario, password: value })
-                  }
-                />
-                <button
-                  className="text-white py-2 block rounded-lg w-full text-base mt-2"
-                  style={{
-                    backgroundColor: "#6adad7",
-                  }}
-                  onClick={pagarConUsuarioClick}
-                >
-                  Pagar con usuario
-                </button>
-              </div>
+              ></div>
+              <FormularioDatos
+                boleto={boleto}
+                setBoleto={setBoleto}
+                setPedido={setPedido}
+                pedido={pedido}
+              />
+            </div>
+            {paquete && (
+              <div>
+                <div>
+                  {paquete.cantidadBoletos300 > 0 && (
+                    <div className="text-center my-2 text-xl bg-yellow-300 rounded">
+                      Escoge tus boletos de $300
+                    </div>
+                  )}
+                  {Array.from(
+                    { length: paquete.cantidadBoletos300 },
+                    (variable, k) => (
+                      <Fragment key={k}>
+                        {rifas300.length > 0 &&
+                          boletos.boletos300.length > 0 && (
+                            <RifaPaquete
+                              boletoState={boletos.boletos300[k]}
+                              setBoletos={setBoletos}
+                              rifas={rifas300}
+                              precioBoletos="boletos300"
+                            />
+                          )}
+                      </Fragment>
+                    )
+                  )}
+                </div>
+                <div>
+                  {paquete.cantidadBoletos350 > 0 && (
+                    <div className="text-center my-2 text-xl bg-yellow-300 rounded">
+                      Escoge tus boletos de $350
+                    </div>
+                  )}
+                  {Array.from(
+                    { length: paquete.cantidadBoletos350 },
+                    (variable, k) => (
+                      <Fragment key={k}>
+                        {rifas350.length > 0 &&
+                          boletos.boletos350.length > 0 && (
+                            <RifaPaquete
+                              boletoState={boletos.boletos350[k]}
+                              setBoletos={setBoletos}
+                              rifas={rifas350}
+                              precioBoletos="boletos350"
+                            />
+                          )}
+                      </Fragment>
+                    )
+                  )}
+                </div>
+                <div>
+                  {paquete.cantidadBoletos500 > 0 && (
+                    <div className="text-center my-2 text-xl bg-yellow-500 rounded">
+                      Escoge tus boletos de $500
+                    </div>
+                  )}
+                  {Array.from(
+                    { length: paquete.cantidadBoletos500 },
+                    (variable, k) => (
+                      <Fragment key={k}>
+                        {rifas500.length > 0 &&
+                          boletos.boletos500.length > 0 && (
+                            <RifaPaquete
+                              boletoState={boletos.boletos500[k]}
+                              setBoletos={setBoletos}
+                              rifas={rifas500}
+                              precioBoletos="boletos500"
+                            />
+                          )}
+                      </Fragment>
+                    )
+                  )}
+                </div>
+              </>
             )}
           </div>
         )}
+        {paquete?.boletosHotPot > 0 && (
+          <div className="text-center my-2 text-xl bg-yellow-500 rounded">
+            {paquete.boletosHotPot} Boletos de Hot Pot
+          </div>
+        )}
+        {boleto.valid &&
+          [
+            ...boletos.boletos300,
+            ...boletos.boletos350,
+            ...boletos.boletos500,
+          ].every((boleto) => {
+            console.log(boleto.boleto);
+            return !(boleto.boleto == null);
+          }) && (
+            <div className="mt-2">
+              <PayPalScriptProvider
+                options={{
+                  "client-id": process.env.NEXT_PUBLIC_PAYPAL_ID,
+                  currency: "MXN",
+                }}
+              >
+                <PayPalButtons
+                  forceReRender={boletos}
+                  createOrder={createOrder}
+                  onApprove={onApprove}
+                  onError={onError}
+                />
+              </PayPalScriptProvider>
+              <ContactoEfectivo />
+              {!pagarConUsuario && (
+                <button
+                  className="text-white py-2 block rounded-lg w-full text-base mb-2"
+                  style={{
+                    backgroundColor: "#6adad7",
+                  }}
+                  onClick={() => setPagarConUsuario(!pagarConUsuario)}
+                >
+                  Pagar con usuario
+                </button>
+              )}
+              {pagarConUsuario && (
+                <div className="">
+                  <input
+                    placeholder="Nombre de Usuario"
+                    className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
+                    type="text"
+                    value={usuario.usuario}
+                    onChange={({ target: { value } }) =>
+                      setUsuario({ ...usuario, usuario: value })
+                    }
+                  />
+                  <input
+                    placeholder="Contraseña"
+                    className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
+                    type="password"
+                    value={usuario.password}
+                    onChange={({ target: { value } }) =>
+                      setUsuario({ ...usuario, password: value })
+                    }
+                  />
+                  <button
+                    className="text-white py-2 block rounded-lg w-full text-base mt-2"
+                    style={{
+                      backgroundColor: "#6adad7",
+                    }}
+                    onClick={pagarConUsuarioClick}
+                  >
+                    Pagar con usuario
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+      </div>
       <Modal
         isOpen={loading}
         ariaHideApp={false}

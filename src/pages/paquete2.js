@@ -1,19 +1,35 @@
+import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { ToastContainer, toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import SlideShowRifas from "../components/paquete/SlideShowRifas";
-import StripePayment from "../components/stripe/StripePayment";
 
-import Navbar from "../components/reusable/Navbar";
-import axiosClient from "../helpers/axiosClient";
-import { useRouter } from "next/router";
+import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
 import { Details } from "../components/rifa/Details";
 import { FormularioDatos } from "../components/reusable/FormularioDatos";
-import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
-import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
 import { Loading } from "../components/reusable/Loading";
 import Modal from "react-modal";
+import Navbar from "../components/reusable/Navbar";
+import SlideShowRifas from "../components/paquete/SlideShowRifas";
+import StripePayment from "../components/stripe/StripePayment";
+import Swal from "sweetalert2";
+import axiosClient from "../helpers/axiosClient";
+import { useRouter } from "next/router";
+import withReactContent from "sweetalert2-react-content";
 
 export default function Home() {
+  const MySwal = withReactContent(Swal);
+
+  useEffect(() => {
+    MySwal.fire({
+      icon: "warning",
+      html: (
+        <div className="">
+          <h3>Estamos experimentando difucultades con los pagos con tarjeta </h3>
+          <h4>Por favor realice su donativo en efectivo</h4>
+          <ContactoEfectivo />
+        </div>
+      ),
+    });
+  }, []);
   const [rifas, setRifas] = useState([]);
   const [boletosSeleccionados, setBoletosSeleccionados] = useState([]);
   const [boletosComprados, setBoletosComprados] = useState([]);
@@ -489,151 +505,153 @@ export default function Home() {
   return (
     <div>
       <Navbar />
-      {paquete && (
-        <>
-          <div className="p-2">
-            <Details rifa={paquete} />
-            <div
-              className="h-1 my-5"
-              style={{
-                borderTop: "4px dotted #6adad7",
-              }}
-            ></div>
+      <div className="max-w-md mx-auto">
+        {paquete && (
+          <>
+            <div className="p-2">
+              <Details rifa={paquete} />
+              <div
+                className="h-1 my-5"
+                style={{
+                  borderTop: "4px dotted #6adad7",
+                }}
+              ></div>
 
-            {boletosComprados && (
-              <SlideShowRifas
-                boletosComprados={boletosComprados}
-                boletosSeleccionados={boletosSeleccionados}
-                agregarBoleto={agregarBoleto}
-                eliminarBoleto={eliminarBoleto}
-                rifas={rifas}
-              />
-            )}
-            {(boletosTotalesSeleccionados.boletos300 <
-              paquete.cantidadBoletos300 ||
-              boletosTotalesSeleccionados.boletos350 <
-                paquete.cantidadBoletos350 ||
-              boletosTotalesSeleccionados.boletos500 <
-                paquete.cantidadBoletos500) && (
-              <div className="px-5 mt-2">
-                <p className="text-center">Boletos Restantes:</p>
-                <div className="flex items-center justify-around">
-                  <p className="text-right border border-green-300 rounded-lg p-2">
-                    <span className="text-green-300 font-bold">
-                      {paquete.cantidadBoletos300 -
-                        boletosTotalesSeleccionados.boletos300}
-                    </span>{" "}
-                    de $300
-                  </p>
-                  <p className="text-right border border-green-300 rounded-lg p-2">
-                    <span className="text-green-300 font-bold">
-                      {paquete.cantidadBoletos350 -
-                        boletosTotalesSeleccionados.boletos350}{" "}
-                    </span>{" "}
-                    de $350
-                  </p>
-                  <p className="text-right border border-green-300 rounded-lg p-2">
-                    <span className="text-green-300 font-bold">
-                      {paquete.cantidadBoletos500 -
-                        boletosTotalesSeleccionados.boletos500}{" "}
-                    </span>{" "}
-                    de $500
-                  </p>
-                </div>
+              {boletosComprados && (
+                <SlideShowRifas
+                  boletosComprados={boletosComprados}
+                  boletosSeleccionados={boletosSeleccionados}
+                  agregarBoleto={agregarBoleto}
+                  eliminarBoleto={eliminarBoleto}
+                  rifas={rifas}
+                />
+              )}
+              {(boletosTotalesSeleccionados.boletos300 <
+                paquete.cantidadBoletos300 ||
+                boletosTotalesSeleccionados.boletos350 <
+                  paquete.cantidadBoletos350 ||
+                boletosTotalesSeleccionados.boletos500 <
+                  paquete.cantidadBoletos500) && (
+                <div className="px-5 mt-2">
+                  <p className="text-center">Boletos Restantes:</p>
+                  <div className="flex items-center justify-around">
+                    <p className="text-right border border-green-300 rounded-lg p-2">
+                      <span className="text-green-300 font-bold">
+                        {paquete.cantidadBoletos300 -
+                          boletosTotalesSeleccionados.boletos300}
+                      </span>{" "}
+                      de $300
+                    </p>
+                    <p className="text-right border border-green-300 rounded-lg p-2">
+                      <span className="text-green-300 font-bold">
+                        {paquete.cantidadBoletos350 -
+                          boletosTotalesSeleccionados.boletos350}{" "}
+                      </span>{" "}
+                      de $350
+                    </p>
+                    <p className="text-right border border-green-300 rounded-lg p-2">
+                      <span className="text-green-300 font-bold">
+                        {paquete.cantidadBoletos500 -
+                          boletosTotalesSeleccionados.boletos500}{" "}
+                      </span>{" "}
+                      de $500
+                    </p>
+                  </div>
 
-                <p className="text-center">
-                  * Los boletos del JackPot se agregan automáticamente{" "}
-                </p>
-              </div>
-            )}
-            {boletosTotalesSeleccionados.boletos300 ===
-              paquete.cantidadBoletos300 &&
-              boletosTotalesSeleccionados.boletos350 ===
-                paquete.cantidadBoletos350 &&
-              boletosTotalesSeleccionados.boletos500 ===
-                paquete.cantidadBoletos500 && (
-                <div
-                  className="rounded-lg block p-1 text-center mt-5"
-                  style={{
-                    border: "4px solid #6adad7",
-                  }}
-                >
-                  <FormularioDatos
-                    boleto={boleto}
-                    setBoleto={setBoleto}
-                    setPedido={setPedido}
-                    pedido={pedido}
-                  />
-                  {boleto.valid && (
-                    <div className="">
-                      <StripePayment
-                        validarDatos={validarDatos}
-                        garantizarBoletos={garantizarBoletos}
-                        amount={parseFloat(paquete.precio)}
-                      />
-                    </div>
-                  )}
+                  <p className="text-center">
+                    * Los boletos del JackPot se agregan automáticamente{" "}
+                  </p>
                 </div>
               )}
-            {boleto.valid &&
-              boletosTotalesSeleccionados.boletos300 ===
+              {boletosTotalesSeleccionados.boletos300 ===
                 paquete.cantidadBoletos300 &&
-              boletosTotalesSeleccionados.boletos350 ===
-                paquete.cantidadBoletos350 &&
-              boletosTotalesSeleccionados.boletos500 ===
-                paquete.cantidadBoletos500 && (
-                <div className="">
-                  <ContactoEfectivo />
-
-                  <div className="mt-2">
-                    {!pagarConUsuario && (
-                      <button
-                        className="text-white py-2 block rounded-lg w-full text-base mb-2"
-                        style={{
-                          backgroundColor: "#6adad7",
-                        }}
-                        onClick={() => setPagarConUsuario(!pagarConUsuario)}
-                      >
-                        Pagar con usuario
-                      </button>
-                    )}
-                    {pagarConUsuario && (
+                boletosTotalesSeleccionados.boletos350 ===
+                  paquete.cantidadBoletos350 &&
+                boletosTotalesSeleccionados.boletos500 ===
+                  paquete.cantidadBoletos500 && (
+                  <div
+                    className="rounded-lg block p-1 text-center mt-5"
+                    style={{
+                      border: "4px solid #6adad7",
+                    }}
+                  >
+                    <FormularioDatos
+                      boleto={boleto}
+                      setBoleto={setBoleto}
+                      setPedido={setPedido}
+                      pedido={pedido}
+                    />
+                    {boleto.valid && (
                       <div className="">
-                        <input
-                          placeholder="Nombre de Usuario"
-                          className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                          type="text"
-                          value={usuario.usuario}
-                          onChange={({ target: { value } }) =>
-                            setUsuario({ ...usuario, usuario: value })
-                          }
+                        <StripePayment
+                          validarDatos={validarDatos}
+                          garantizarBoletos={garantizarBoletos}
+                          amount={parseFloat(paquete.precio)}
                         />
-                        <input
-                          placeholder="Contraseña"
-                          className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
-                          type="password"
-                          value={usuario.password}
-                          onChange={({ target: { value } }) =>
-                            setUsuario({ ...usuario, password: value })
-                          }
-                        />
-                        <button
-                          className="text-white py-2 block rounded-lg w-full text-base mt-2"
-                          style={{
-                            backgroundColor: "#6adad7",
-                          }}
-                          onClick={pagarConUsuarioClick}
-                        >
-                          Pagar con usuario
-                        </button>
                       </div>
                     )}
                   </div>
-                </div>
-              )}
-          </div>
-        </>
-      )}
+                )}
+              {boleto.valid &&
+                boletosTotalesSeleccionados.boletos300 ===
+                  paquete.cantidadBoletos300 &&
+                boletosTotalesSeleccionados.boletos350 ===
+                  paquete.cantidadBoletos350 &&
+                boletosTotalesSeleccionados.boletos500 ===
+                  paquete.cantidadBoletos500 && (
+                  <div className="">
+                    <ContactoEfectivo />
+
+                    <div className="mt-2">
+                      {!pagarConUsuario && (
+                        <button
+                          className="text-white py-2 block rounded-lg w-full text-base mb-2"
+                          style={{
+                            backgroundColor: "#6adad7",
+                          }}
+                          onClick={() => setPagarConUsuario(!pagarConUsuario)}
+                        >
+                          Pagar con usuario
+                        </button>
+                      )}
+                      {pagarConUsuario && (
+                        <div className="">
+                          <input
+                            placeholder="Nombre de Usuario"
+                            className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
+                            type="text"
+                            value={usuario.usuario}
+                            onChange={({ target: { value } }) =>
+                              setUsuario({ ...usuario, usuario: value })
+                            }
+                          />
+                          <input
+                            placeholder="Contraseña"
+                            className="block w-full bg-transparent text-center border-b border-gray-500 p-1"
+                            type="password"
+                            value={usuario.password}
+                            onChange={({ target: { value } }) =>
+                              setUsuario({ ...usuario, password: value })
+                            }
+                          />
+                          <button
+                            className="text-white py-2 block rounded-lg w-full text-base mt-2"
+                            style={{
+                              backgroundColor: "#6adad7",
+                            }}
+                            onClick={pagarConUsuarioClick}
+                          >
+                            Pagar con usuario
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+            </div>
+          </>
+        )}
+      </div>
       <Modal
         isOpen={loading}
         ariaHideApp={false}

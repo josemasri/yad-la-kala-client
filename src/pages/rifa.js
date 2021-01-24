@@ -1,17 +1,34 @@
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import axiosClient from "../helpers/axiosClient";
-import { toast, ToastContainer } from "react-toastify";
-import { SelectorNumeros } from "../components/rifa/SelectorNumeros";
-import { Details } from "../components/rifa/Details";
-import Modal from "react-modal";
-import { Loading } from "../components/reusable/Loading";
-import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
-import StripePayment from "../components/stripe/StripePayment";
-import { FormularioDatos } from "../components/reusable/FormularioDatos";
+import React, { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+
 import { BoletosSeleccionados } from "../components/reusable/BoletosSeleccionados";
+import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
+import { Details } from "../components/rifa/Details";
+import { FormularioDatos } from "../components/reusable/FormularioDatos";
+import { Loading } from "../components/reusable/Loading";
+import Modal from "react-modal";
+import { SelectorNumeros } from "../components/rifa/SelectorNumeros";
+import StripePayment from "../components/stripe/StripePayment";
+import Swal from "sweetalert2";
+import axiosClient from "../helpers/axiosClient";
+import { useRouter } from "next/router";
+import withReactContent from "sweetalert2-react-content";
 
 const rifa = () => {
+  const MySwal = withReactContent(Swal);
+
+  useEffect(() => {
+    MySwal.fire({
+      icon: "warning",
+      html: (
+        <div className="">
+          <h3>Estamos experimentando difucultades con los pagos con tarjeta </h3>
+          <h4>Por favor realice su donativo en efectivo</h4>
+          <ContactoEfectivo />
+        </div>
+      ),
+    });
+  }, []);
   const [rifa, setRifa] = useState();
   const router = useRouter();
 

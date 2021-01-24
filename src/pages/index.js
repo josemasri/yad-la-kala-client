@@ -1,14 +1,14 @@
+import { ToastContainer, toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import { Contact } from "../components/contact/Contact";
-import { RifasWellcome } from "../components/index/Rifas";
-import SlideShowRifas from "../components/index/SlideShowRifas";
-import SlideShowPaqutes from "../components/index/SlideShowPaqutes";
 
-import { Inicio } from "../components/inicio/Inicio";
-import Navbar from "../components/reusable/Navbar";
-import axiosClient from "../helpers/axiosClient";
+import { Contact } from "../components/contact/Contact";
+import Footer from "../components/reusable/Footer";
 import { HotPot } from "../components/index/HotPot";
+import Navbar from "../components/reusable/Navbar";
+import { RifasWellcome } from "../components/index/Rifas";
+import SlideShowPaqutes from "../components/index/SlideShowPaqutes";
+import SlideShowRifas from "../components/index/SlideShowRifas";
+import axiosClient from "../helpers/axiosClient";
 
 export default function Home() {
   const [rifas, setRifas] = useState([]);
@@ -43,12 +43,15 @@ export default function Home() {
     <div>
       <Navbar />
       {/* <Inicio wellcomeRef={wellcomeRef} /> */}
-      <RifasWellcome wellcomeRef={wellcomeRef} />
-      <SlideShowPaqutes paquetes={paquetes} />
-      <SlideShowRifas rifas={rifas} />
-      <HotPot />
-      <Contact />
-      <ToastContainer />
+      <div className="max-w-md mx-auto">
+        <RifasWellcome wellcomeRef={wellcomeRef} />
+        <SlideShowPaqutes paquetes={paquetes} />
+        <SlideShowRifas rifas={rifas} />
+        <HotPot />
+        <Contact />
+        <ToastContainer />
+      </div>
+      <Footer />
     </div>
   );
 }

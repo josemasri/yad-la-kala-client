@@ -1,6 +1,6 @@
-import React from 'react';
-import Document, { Html, Head, Main, NextScript } from 'next/document'
+import Document, { Head, Html, Main, NextScript } from 'next/document'
 
+import React from 'react';
 
 class MyDocument extends Document {
     static async getInitialProps(ctx) {
@@ -12,7 +12,7 @@ class MyDocument extends Document {
         return (
             <Html>
                 <Head />
-                <body className="max-w-lg mx-auto">
+                <body className="mx-auto">
                     <Main />
                     <NextScript />
                 </body>

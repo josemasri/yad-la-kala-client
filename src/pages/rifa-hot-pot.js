@@ -1,15 +1,32 @@
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import axiosClient from "../helpers/axiosClient";
-import { toast, ToastContainer } from "react-toastify";
-import { HotPot } from "../components/index/HotPot";
-import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
-import StripePayment from "../components/stripe/StripePayment";
-import Modal from "react-modal";
-import { Loading } from "../components/reusable/Loading";
+import React, { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
 
+import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
+import { HotPot } from "../components/index/HotPot";
+import { Loading } from "../components/reusable/Loading";
+import Modal from "react-modal";
+import Navbar from "../components/reusable/Navbar";
+import StripePayment from "../components/stripe/StripePayment";
+import Swal from "sweetalert2";
+import axiosClient from "../helpers/axiosClient";
+import { useRouter } from "next/router";
+import withReactContent from "sweetalert2-react-content";
 
 const RifaHotPotPage = () => {
+  const MySwal = withReactContent(Swal);
+
+  useEffect(() => {
+    MySwal.fire({
+      icon: "warning",
+      html: (
+        <div className="">
+          <h3>Estamos experimentando difucultades con los pagos con tarjeta </h3>
+          <h4>Por favor realice su donativo en efectivo</h4>
+          <ContactoEfectivo />
+        </div>
+      ),
+    });
+  }, []);
   const [numeroActual, setNumeroActual] = useState();
   const router = useRouter();
 
@@ -32,7 +49,6 @@ const RifaHotPotPage = () => {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-
 
   const validarBoleto = () => {
     if (boleto.nombre.trim() === "") {
@@ -120,7 +136,8 @@ const RifaHotPotPage = () => {
 
   return (
     <>
-      <div className="min-h-screen p-5 font-bold max-w-4xl mx-auto">
+      <Navbar />
+      <div className="min-h-screen p-5 font-bold max-w-md mx-auto">
         <div
           className="rounded-lg my-2"
           style={{
