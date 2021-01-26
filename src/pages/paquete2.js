@@ -2,6 +2,7 @@ import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { ToastContainer, toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
 
+import { BotonDonativos } from "../components/reusable/BotonDonativos";
 import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
 import { Details } from "../components/rifa/Details";
 import { FormularioDatos } from "../components/reusable/FormularioDatos";
@@ -17,19 +18,6 @@ import withReactContent from "sweetalert2-react-content";
 
 export default function Home() {
   const MySwal = withReactContent(Swal);
-
-  useEffect(() => {
-    MySwal.fire({
-      icon: "warning",
-      html: (
-        <div className="">
-          <h3>Estamos experimentando difucultades con los pagos con tarjeta </h3>
-          <h4>Por favor realice su donativo en efectivo</h4>
-          <ContactoEfectivo />
-        </div>
-      ),
-    });
-  }, []);
   const [rifas, setRifas] = useState([]);
   const [boletosSeleccionados, setBoletosSeleccionados] = useState([]);
   const [boletosComprados, setBoletosComprados] = useState([]);
@@ -502,6 +490,95 @@ export default function Home() {
     }
   };
 
+
+
+  const pagarConDonativos = async () => {
+    try {
+      setLoading(true);
+      // Obtener boletos comprados
+      const resBoletosActual = await axiosClient.get(`/boletosComprados`);
+      let duplicates = false;
+      // Todo check duplicates
+      Object.keys(resBoletosActual.data).forEach((rifaId) => {
+        // Encontrar Boleto
+        const boletoActual = boletosSeleccionados.find(
+          (boletosSeleccionado) => boletosSeleccionado.rifa === rifaId
+        );
+        if (boletoActual) {
+          if (
+            boletoActual.numeros.some((r) =>
+              resBoletosActual.data[rifaId].includes(r)
+            )
+          ) {
+            toast(
+              `Uno de tus boletos de la rifa ${
+                rifas.find((rifa) => rifa.id === rifaId).nombre
+              } fue comprado, por favor cambialo antes de continuar`,
+              {
+                type: "error",
+              }
+            );
+            duplicates = true;
+          }
+        }
+      });
+      if (duplicates) {
+        setLoading(false);
+        return;
+      }
+
+      // Agregar cuenta
+      try {
+        setLoading(true);
+        const boletos = [];
+        boletosSeleccionados.forEach((boletosSeleccionado) => {
+          boletosSeleccionado.numeros.forEach((numero) =>
+            boletos.push({
+              boleto: numero,
+              rifa: boletosSeleccionado.rifa,
+            })
+          );
+        });
+        const res = await axiosClient.post("/comprar-paquete-boletos-donativos", {
+          boletos,
+          paquete: paquete.id,
+          ...boleto,
+        });
+        setLoading(false);
+      MySwal.fire({
+        title: "Estas siendo redirigido a Dontivos Inteligentes",
+        text:
+          "Tienes hasta 48 horas para completar tu pago y garantizar tus boletos",
+        icon: "success",
+      });
+      setTimeout(() => {
+        window.location = encodeURI(
+          `https://www.donativosinteligentes.com/proyectos/you-give-you-win/donacion-express/?mo=${
+            paquete.precio
+          }&nom=${boleto.nombre.split(" ")[0]}&ape=${
+            boleto.nombre.split(" ")[1]
+          }&em=${boleto.mail}&cel=${boleto.celular}&com=Paquete ${
+            paquete.nombre
+          }\nNumeros Seleccionados: 
+          ${boletos.map(
+            (boleto) => `\nRifa: ${ rifas.find((rifa) => rifa.id === boleto.rifa).nombre} Boleto ${boleto.boleto}, `
+          )}`
+        );
+      }, 10000);
+      } catch (error) {
+        setLoading(false);
+        toast("Usuario o contraseña incorrecta", {
+          type: "error",
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+      toast("Ha ocurrido un error", {
+        type: "error",
+      });
+    }
+  };
+
   return (
     <div>
       <Navbar />
@@ -583,11 +660,12 @@ export default function Home() {
                     />
                     {boleto.valid && (
                       <div className="">
-                        <StripePayment
+                        <BotonDonativos onClick={pagarConDonativos} />
+                        {/* <StripePayment
                           validarDatos={validarDatos}
                           garantizarBoletos={garantizarBoletos}
                           amount={parseFloat(paquete.precio)}
-                        />
+                        /> */}
                       </div>
                     )}
                   </div>

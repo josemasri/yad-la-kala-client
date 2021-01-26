@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 
 import { BoletosSeleccionados } from "../components/reusable/BoletosSeleccionados";
+import { BotonDonativos } from "../components/reusable/BotonDonativos";
 import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
 import { Details } from "../components/rifa/Details";
 import { FormularioDatos } from "../components/reusable/FormularioDatos";
@@ -16,19 +17,6 @@ import withReactContent from "sweetalert2-react-content";
 
 const rifa = () => {
   const MySwal = withReactContent(Swal);
-
-  useEffect(() => {
-    MySwal.fire({
-      icon: "warning",
-      html: (
-        <div className="">
-          <h3>Estamos experimentando difucultades con los pagos con tarjeta </h3>
-          <h4>Por favor realice su donativo en efectivo</h4>
-          <ContactoEfectivo />
-        </div>
-      ),
-    });
-  }, []);
   const [rifa, setRifa] = useState();
   const router = useRouter();
 
@@ -199,6 +187,67 @@ const rifa = () => {
     }
   }, [boleto]);
 
+  const pagarConDonativos = async () => {
+    if (!boleto.nombre.split(" ")[1]) {
+      toast('Por favor ingresa tu nombre completo', {
+        type: 'warning'
+      });
+      return;
+    }
+
+    const res = await axiosClient.get(`/rifas/${router.query.id}`);
+    const duplicates = res.data.boletosComprados.some((r) =>
+      numerosSeleccionados.includes(r)
+    );
+    if (duplicates) {
+      setRifa(res.data);
+      toast(
+        "El número seleccionado dejo de estar disponible, por favor selecciona otro(s)",
+        { type: "error" }
+      );
+      setNumerosSeleccionados([]);
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await axiosClient.post("/boletos-donativos", {
+        nombre: boleto.nombre,
+        mail: boleto.mail,
+        celular: boleto.celular,
+        pedido: boleto.pedido,
+        rifa: rifa.id,
+        numerosSeleccionados,
+      });
+      setLoading(false);
+      MySwal.fire({
+        title: "Estas siendo redirigido a Dontivos Inteligentes",
+        text:
+          "Tienes hasta 48 horas para completar tu pago y garantizar tus boletos",
+        icon: "success",
+      });
+      setTimeout(() => {
+        window.location = encodeURI(
+          `https://www.donativosinteligentes.com/proyectos/you-give-you-win/donacion-express/?mo=${
+            numerosSeleccionados.length * rifa.precio
+          }&nom=${boleto.nombre.split(" ")[0]}&ape=${
+            boleto.nombre.split(" ")[1]
+          }&em=${boleto.mail}&cel=${boleto.celular}&com=Rifa ${
+            rifa.nombre
+          }\nNumeros Seleccionados: 
+          ${numerosSeleccionados.map(
+            (numero) => `${numero}, `
+          )}`
+        );
+      }, 10000);
+    } catch (error) {
+      toast("Usuario o contraseña incorrecta", {
+        type: "error",
+      });
+      setLoading(false);
+      console.log(error.response.data);
+    }
+  };
+
   return (
     <>
       {rifa && (
@@ -247,13 +296,14 @@ const rifa = () => {
               {numerosSeleccionados.length > 0 && boleto.valid ? (
                 <div className="my-2">
                   <div className="">
-                    <StripePayment
+                    <BotonDonativos onClick={pagarConDonativos} />
+                    {/* <StripePayment
                       validarDatos={validarDatos}
                       garantizarBoletos={garantizarBoletos}
                       amount={parseFloat(
                         numerosSeleccionados.length * rifa.precio
                       )}
-                    />
+                    /> */}
                   </div>
                 </div>
               ) : (

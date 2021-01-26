@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 
+import { BotonDonativos } from "../components/reusable/BotonDonativos";
 import { ContactoEfectivo } from "../components/reusable/ContactoEfectivo";
 import { HotPot } from "../components/index/HotPot";
 import { Loading } from "../components/reusable/Loading";
@@ -14,19 +15,6 @@ import withReactContent from "sweetalert2-react-content";
 
 const RifaHotPotPage = () => {
   const MySwal = withReactContent(Swal);
-
-  useEffect(() => {
-    MySwal.fire({
-      icon: "warning",
-      html: (
-        <div className="">
-          <h3>Estamos experimentando difucultades con los pagos con tarjeta </h3>
-          <h4>Por favor realice su donativo en efectivo</h4>
-          <ContactoEfectivo />
-        </div>
-      ),
-    });
-  }, []);
   const [numeroActual, setNumeroActual] = useState();
   const router = useRouter();
 
@@ -99,6 +87,45 @@ const RifaHotPotPage = () => {
         password: usuario.password,
       });
       router.push("/agradecimiento");
+    } catch (error) {
+      console.log(error.response.data);
+    }
+  };
+
+
+
+
+  const pagarConDonativos = async () => {
+    if (!boleto.nombre.split(" ")[1]) {
+      toast('Por favor ingresa tu nombre completo', {
+        type: 'warning'
+      });
+      return;
+    }
+
+    // Registrar boletos en la bd
+    try {
+      await axiosClient.post("/boletos-hot-pot-donativos", {
+        nombre: boleto.nombre,
+        mail: boleto.mail,
+        celular: boleto.celular,
+        pedido: boleto.pedido
+      });
+      MySwal.fire({
+        title: "Estas siendo redirigido a Dontivos Inteligentes",
+        text:
+          "Tienes hasta 48 horas para completar tu pago y garantizar tus boletos",
+        icon: "success",
+      });
+      setTimeout(() => {
+        window.location = encodeURI(
+          `https://www.donativosinteligentes.com/proyectos/you-give-you-win/donacion-express/?mo=${
+            500
+          }&nom=${boleto.nombre.split(" ")[0]}&ape=${
+            boleto.nombre.split(" ")[1]
+          }&em=${boleto.mail}&cel=${boleto.celular}&com=Rifa Jackpot\n`
+        );
+      }, 10000);
     } catch (error) {
       console.log(error.response.data);
     }
@@ -248,11 +275,13 @@ const RifaHotPotPage = () => {
             {boleto.valid ? (
               <div className="mt-2">
                 <div className="">
-                  <StripePayment
+                  {/* <StripePayment
                     validarDatos={validarDatos}
                     garantizarBoletos={garantizarBoletos}
                     amount={parseFloat(500)}
-                  />
+                  /> */}
+                  <BotonDonativos onClick={pagarConDonativos} />
+
                 </div>
               </div>
             ) : (
