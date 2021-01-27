@@ -57,7 +57,11 @@ const rifa = () => {
 
   useEffect(() => {
     if (router.query.id) {
-      getRifa(router.query.id || "5ffe9ef84a3d2935287270f0");
+      try {
+        getRifa(router.query.id);
+      } catch (err) {
+        console.log(err);
+      }
     } else {
       router.push("/");
     }
