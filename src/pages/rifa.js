@@ -42,7 +42,7 @@ const rifa = () => {
     password: "",
   });
 
-  const getRifa = async (id = "5ff60ec739fb4810c05415d4") => {
+  const getRifa = async (id) => {
     try {
       setLoading(true);
       const res = await axiosClient.get(`/rifas/${id}`);
