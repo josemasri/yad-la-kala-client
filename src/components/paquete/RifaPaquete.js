@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
-import axiosClient from "../../helpers/axiosClient";
+import React, { useEffect, useState } from "react";
+
 import { SelectorNumeros } from "./SelectorNumeros";
+import axiosClient from "../../helpers/axiosClient";
 
 export const RifaPaquete = ({
   rifas,
@@ -42,7 +43,7 @@ export const RifaPaquete = ({
   return (
     <div className="border-4 border-green-300 mt-2 p-1 rounded-lg">
       <div className="flex justify-center items-center">
-        <label htmlFor="rifa">Rifa</label>
+        <label htmlFor="rifa">Rifa </label>
         <select
           className="ml-5 rounded-lg p-2 border border-green-300"
           name="rifa"
