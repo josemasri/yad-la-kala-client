@@ -22,7 +22,7 @@ const SlideshowRifas = ({ rifas }) => {
                 ></div>
               </a>
             </Link>
-            <Link href={`/rifa?id=${rifa.idInterno}`}>
+            <Link href={`/rifa?id=${rifa.id}`}>
               <a
                 className="py-2 px-5 mt-2 block w-1/2 mx-auto text-center text-xl rounded font-semibold text-white shadow-lg"
                 style={{
