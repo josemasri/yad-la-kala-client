@@ -190,7 +190,7 @@ export default function Home() {
         if (paquete.cantidadBoletos300 < 10) {
           if (boletoActual.numeros.length >= 2) {
             toast(
-              "No puedes seleccionar más de 1 boletos por rifa para este paquete",
+              "No puedes seleccionar más de 2 boletos por rifa para este paquete",
               {
                 type: "warning",
               }
@@ -201,7 +201,7 @@ export default function Home() {
           // No más de 3 boletos por rifa
           if (boletoActual.numeros.length >= 3) {
             toast(
-              "No puedes seleccionar más de 2 boleto por rifa para este paquete",
+              "No puedes seleccionar más de 3 boleto por rifa para este paquete",
               {
                 type: "warning",
               }
