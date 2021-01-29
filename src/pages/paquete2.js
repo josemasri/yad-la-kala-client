@@ -188,7 +188,7 @@ export default function Home() {
       if (boletoActual) {
         // Ver tamaño
         if (paquete.cantidadBoletos300 < 10) {
-          if (boletoActual.numeros.length >= 1) {
+          if (boletoActual.numeros.length >= 2) {
             toast(
               "No puedes seleccionar más de 1 boletos por rifa para este paquete",
               {
@@ -198,8 +198,8 @@ export default function Home() {
             return;
           }
         } else {
-          // No más de 2 boletos por rifa
-          if (boletoActual.numeros.length >= 2) {
+          // No más de 3 boletos por rifa
+          if (boletoActual.numeros.length >= 3) {
             toast(
               "No puedes seleccionar más de 2 boleto por rifa para este paquete",
               {
