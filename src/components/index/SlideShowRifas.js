@@ -13,7 +13,7 @@ const SlideshowRifas = ({ rifas }) => {
               <a>
                 <div
                   style={{
-                    backgroundImage: `url(${rifa.soldout ? imgSoldout : rifa.imagen})`,
+                    backgroundImage: `url(${rifa.soldout ? rifa.imgSoldout : rifa.imagen})`,
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     backgroundSize: "100% 100%",
