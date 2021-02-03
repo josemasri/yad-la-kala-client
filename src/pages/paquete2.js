@@ -286,7 +286,13 @@ export default function Home() {
     const getRifas = async () => {
       try {
         const res = await axiosClient.get("/rifas");
-        setRifas(res.data);
+        const boletosComprados = await axiosClient.get("/boletosComprados");
+        const rifas = res.data.map((rifa, i) => ({
+          ...rifa,
+          imgSoldout: `https://imagenes-yad.s3.us-east-2.amazonaws.com/rifa-${i}-s.png`,
+          soldout: boletosComprados.data[rifa.id].length >= rifa.numerosTotales
+        }));
+        setRifas(rifas);
         console.log(res.data);
       } catch (error) {
         router.push("/");
