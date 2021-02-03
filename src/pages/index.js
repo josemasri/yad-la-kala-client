@@ -20,7 +20,7 @@ export default function Home() {
         const boletosComprados = await axiosClient.get("/boletosComprados");
         const rifas = res.data.map((rifa, i) => ({
           ...rifa,
-          imgSoldout: `https://imagenes-yad.s3.us-east-2.amazonaws.com/rifa-${i}-s.png`,
+          imgSoldout: `https://imagenes-yad.s3.us-east-2.amazonaws.com/rifa-${i+1}-s.png`,
           soldout: boletosComprados.data[rifa.id].length >= rifa.numerosTotales
         }));
         setRifas(rifas);
