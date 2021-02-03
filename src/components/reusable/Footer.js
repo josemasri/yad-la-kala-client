@@ -13,7 +13,7 @@ const Footer = () => {
       <div className="w-full mx-auto py-2 max-w-md flex justify-around items-center">
         <p className="text-white">Desarrollado por Jose Masri</p>
         <a className="text-white" href="tel:+525563192945">
-          563192945
+        5563192945
         </a>
       </div>
     </footer>
