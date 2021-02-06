@@ -18,11 +18,16 @@ export default function Home() {
       try {
         const res = await axiosClient.get("/rifas");
         const boletosComprados = await axiosClient.get("/boletosComprados");
-        const rifas = res.data.map((rifa, i) => ({
-          ...rifa,
-          imgSoldout: `https://imagenes-yad.s3.us-east-2.amazonaws.com/rifa-${i+1}-s.png`,
-          soldout: boletosComprados.data[rifa.id].length >= rifa.numerosTotales
-        }));
+        const rifas = res.data
+          .map((rifa, i) => ({
+            ...rifa,
+            imgSoldout: `https://imagenes-yad.s3.us-east-2.amazonaws.com/rifa-${
+              i + 1
+            }-s.png`,
+            soldout:
+              boletosComprados.data[rifa.id].length >= rifa.numerosTotales,
+          }))
+          .sort((a, b) => a.soldout - b.soldout);
         setRifas(rifas);
       } catch (error) {
         toast("Ha ocurrido un error al cargar las rifas", {
