@@ -1,8 +1,8 @@
-import styled from "@emotion/styled";
-import React from "react";
 import Link from "next/link";
-import { Slide } from "react-slideshow-image";
+import React from "react";
 import { SelectorNumeros } from "./SelectorNumeros";
+import { Slide } from "react-slideshow-image";
+import styled from "@emotion/styled";
 
 const SlideshowRifas = ({
   rifas,
@@ -19,7 +19,7 @@ const SlideshowRifas = ({
             <div
               className="mx-auto"
               style={{
-                backgroundImage: `url(${rifa.imagen})`,
+                backgroundImage: `url(${rifa.soldout ? rifa.imgSoldout : rifa.imagen})`,
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
                 backgroundSize: "100% 100%",

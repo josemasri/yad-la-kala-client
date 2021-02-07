@@ -287,11 +287,14 @@ export default function Home() {
       try {
         const res = await axiosClient.get("/rifas");
         const boletosComprados = await axiosClient.get("/boletosComprados");
-        const rifas = res.data.map((rifa, i) => ({
-          ...rifa,
-          imgSoldout: `https://imagenes-yad.s3.us-east-2.amazonaws.com/rifa-${i}-s.png`,
-          soldout: boletosComprados.data[rifa.id].length >= rifa.numerosTotales
-        }));
+        const rifas = res.data
+          .map((rifa, i) => ({
+            ...rifa,
+            imgSoldout: `https://imagenes-yad.s3.us-east-2.amazonaws.com/rifa-${i}-s.png`,
+            soldout:
+              boletosComprados.data[rifa.id].length >= rifa.numerosTotales,
+          }))
+          .sort((a, b) => a.soldout - b.soldout);
         setRifas(rifas);
         console.log(res.data);
       } catch (error) {
@@ -496,8 +499,6 @@ export default function Home() {
     }
   };
 
-
-
   const pagarConDonativos = async () => {
     try {
       setLoading(true);
@@ -545,32 +546,38 @@ export default function Home() {
             })
           );
         });
-        const res = await axiosClient.post("/comprar-paquete-boletos-donativos", {
-          boletos,
-          paquete: paquete.id,
-          ...boleto,
-        });
-        setLoading(false);
-      MySwal.fire({
-        title: "Estas siendo redirigido a Dontivos Inteligentes",
-        text:
-          "Tienes hasta 48 horas para completar tu pago y garantizar tus boletos",
-        icon: "success",
-      });
-      setTimeout(() => {
-        window.location = encodeURI(
-          `https://www.donativosinteligentes.com/proyectos/you-give-you-win/donacion-express/?mo=${
-            paquete.precio
-          }&nom=${boleto.nombre.split(" ")[0]}&ape=${
-            boleto.nombre.split(" ")[1]
-          }&em=${boleto.mail}&cel=${boleto.celular}&com=Paquete ${
-            paquete.nombre
-          }\nNumeros Seleccionados: 
-          ${boletos.map(
-            (boleto) => `\nRifa: ${ rifas.find((rifa) => rifa.id === boleto.rifa).nombre} Boleto ${boleto.boleto}, `
-          )}`
+        const res = await axiosClient.post(
+          "/comprar-paquete-boletos-donativos",
+          {
+            boletos,
+            paquete: paquete.id,
+            ...boleto,
+          }
         );
-      }, 10000);
+        setLoading(false);
+        MySwal.fire({
+          title: "Estas siendo redirigido a Dontivos Inteligentes",
+          text:
+            "Tienes hasta 48 horas para completar tu pago y garantizar tus boletos",
+          icon: "success",
+        });
+        setTimeout(() => {
+          window.location = encodeURI(
+            `https://www.donativosinteligentes.com/proyectos/you-give-you-win/donacion-express/?mo=${
+              paquete.precio
+            }&nom=${boleto.nombre.split(" ")[0]}&ape=${
+              boleto.nombre.split(" ")[1]
+            }&em=${boleto.mail}&cel=${boleto.celular}&com=Paquete ${
+              paquete.nombre
+            }\nNumeros Seleccionados: 
+          ${boletos.map(
+            (boleto) =>
+              `\nRifa: ${
+                rifas.find((rifa) => rifa.id === boleto.rifa).nombre
+              } Boleto ${boleto.boleto}, `
+          )}`
+          );
+        }, 10000);
       } catch (error) {
         setLoading(false);
         toast("Usuario o contraseña incorrecta", {
