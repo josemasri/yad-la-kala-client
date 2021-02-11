@@ -56,8 +56,8 @@ export default function Home() {
       {/* <Inicio wellcomeRef={wellcomeRef} /> */}
       <div className="max-w-md mx-auto">
         <RifasWellcome wellcomeRef={wellcomeRef} />
-        <SlideShowPaqutes paquetes={paquetes} />
-        <SlideShowRifas rifas={rifas} />
+        {/* <SlideShowPaqutes paquetes={paquetes} />
+        <SlideShowRifas rifas={rifas} /> */}
         <HotPot />
         <Contact />
         <ToastContainer />
