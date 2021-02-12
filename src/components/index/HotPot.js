@@ -1,6 +1,7 @@
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
+
 import CountUp from "react-countup";
+import Link from "next/link";
 import axiosClient from "../../helpers/axiosClient";
 
 export const HotPot = () => {
@@ -9,7 +10,7 @@ export const HotPot = () => {
     axiosClient
       .get("/hot-pots")
       .then((res) =>
-        setNumeroActual((res.data[0].siguienteDisponible - 1) * 500 + 50000)
+        setNumeroActual(296000)
       );
   }, []);
 
