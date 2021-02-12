@@ -10,7 +10,7 @@ export const HotPot = () => {
     axiosClient
       .get("/hot-pots")
       .then((res) =>
-        setNumeroActual(296000)
+        setNumeroActual(301000)
       );
   }, []);
 
