@@ -673,7 +673,7 @@ export default function Home() {
                     />
                     {boleto.valid && (
                       <div className="">
-                        <BotonDonativos onClick={pagarConDonativos} />
+                        {/* <BotonDonativos onClick={pagarConDonativos} /> */}
                         {/* <StripePayment
                           validarDatos={validarDatos}
                           garantizarBoletos={garantizarBoletos}
